@@ -1,8 +1,8 @@
-function! coqtop#new()"{{{
+function! coqtop#new() "{{{
   let l:coq = deepcopy(s:coq)
   call l:coq.start()
   return l:coq
-endfunction"}}}
+endfunction "}}}
 
 let s:coq = {
       \ 'proc': {},
@@ -12,7 +12,7 @@ let s:coq = {
       \ 'match_id': 0,
       \ }
 
-function! s:coq.start()"{{{
+function! s:coq.start() "{{{
   let self.proc = vimproc#popen2(['coqtop', '-emacs-U'])
 
   rightbelow vnew
@@ -46,27 +46,27 @@ function! s:coq.start()"{{{
   augroup coqtop
     autocmd CursorMoved,CursorMovedI <buffer> call b:coq.check_line()
   augroup END
-endfunction"}}}"}}}
+endfunction "}}}
 
-function! s:coqgoto_i()"{{{
+function! s:coqgoto_i() "{{{
   let l:prefix = "\<Esc>:\<C-u>CoqGoto\<CR>"
   if line('.') == line('$')
     return l:prefix . 'o'
   else
     return l:prefix . 'jO'
   endif
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.check_line()"{{{
+function! s:coq.check_line() "{{{
   let l:line = line('.')
   if l:line <= self.last_line && l:line < line('$')
     setlocal nomodifiable
   else
     setlocal modifiable
   endif
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.quit()"{{{
+function! s:coq.quit() "{{{
   call self.proc.stdin.write("Quit.\n")
   call self.proc.waitpid()
 
@@ -99,9 +99,9 @@ function! s:coq.quit()"{{{
   endif
 
   setlocal modifiable
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.clear()"{{{
+function! s:coq.clear() "{{{
   call self.proc.stdin.write("Quit.\n")
   call self.proc.waitpid()
   let self.proc = vimproc#popen2(['coqtop', '-emacs-U'])
@@ -114,9 +114,9 @@ function! s:coq.clear()"{{{
   let l:buf = substitute(l:buf, '</prompt>.*$', '', '')
   let [l:msg, l:prompt] = split(l:buf, '<prompt>')
   call self.display(split(l:msg, '\n'))
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.goto(end) abort"{{{
+function! s:coq.goto(end) abort "{{{
   if a:end < self.last_line
     call self.do_backtrack(a:end)
   else
@@ -129,9 +129,9 @@ function! s:coq.goto(end) abort"{{{
     call matchdelete(self.match_id)
   endif
   let self.match_id = matchadd('coqtopFrozen', '\%' . self.last_line . 'l')
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.do_backtrack(end) abort"{{{
+function! s:coq.do_backtrack(end) abort "{{{
   let l:end = a:end
   while !has_key(self.backtrack, l:end) && l:end >= 0
     let l:end -= 1
@@ -157,9 +157,9 @@ function! s:coq.do_backtrack(end) abort"{{{
     call self.clear()
     call self.eval_to(l:end)
   endif
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.eval_to(end) abort"{{{
+function! s:coq.eval_to(end) abort "{{{
   let l:lines = getline(self.last_line+1, a:end)
   let l:count = s:count_dots(l:lines, self.last_line+1)
   if l:count == 0
@@ -185,9 +185,9 @@ function! s:coq.eval_to(end) abort"{{{
   endwhile
   let self.last_line = l:lineno - 1
   call self.display(split(l:msg, '\n'))
-endfunction"}}}
+endfunction "}}}
 
-function! s:count_dots(lines, lineno)"{{{
+function! s:count_dots(lines, lineno) "{{{
   let l:count = 0
   let l:lineno = a:lineno
   for l:line in a:lines
@@ -206,17 +206,17 @@ function! s:count_dots(lines, lineno)"{{{
     let l:lineno += 1
   endfor
   return l:count
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.read_until_prompt(n)"{{{
+function! s:coq.read_until_prompt(n) "{{{
   let l:buf = ''
   while match(l:buf, '</prompt>', 0, a:n) == -1
     let l:buf .= self.proc.stdout.read(-1, 100)
   endwhile
   return l:buf
-endfunction"}}}
+endfunction "}}}
 
-function! s:parse_prompt(prompt) abort"{{{
+function! s:parse_prompt(prompt) abort "{{{
   let l:prompt = substitute(a:prompt, '^\s*', '', '')
   let l:dict = {}
   let l:id_and_nums = split(l:prompt, '\s*<\s*')
@@ -226,9 +226,9 @@ function! s:parse_prompt(prompt) abort"{{{
   let l:dict.opened_proofs = l:env[1 : -2]
   let l:dict.proof_state = l:env[-1]
   return l:dict
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.display(lines)"{{{
+function! s:coq.display(lines) "{{{
   try
     let l:cur = winnr()
     execute bufwinnr(self.bufnr) 'wincmd w'
@@ -237,20 +237,20 @@ function! s:coq.display(lines)"{{{
   finally
     execute l:cur 'wincmd w'
   endtry
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.exec_and_display(cmd)"{{{
+function! s:coq.exec_and_display(cmd) "{{{
   call self.proc.stdin.write(a:cmd)
   let l:buf = self.read_until_prompt(1)
   let l:buf = substitute(l:buf, '</prompt>.*$', '', '')
   let [l:msg, l:prompt] = split(l:buf, '<prompt>')
   call self.display(split(l:msg, '\n'))
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.print(id)"{{{
+function! s:coq.print(id) "{{{
   call self.exec_and_display('Print ' . a:id . ".\n")
-endfunction"}}}
+endfunction "}}}
 
-function! s:coq.search_about(input)"{{{
+function! s:coq.search_about(input) "{{{
   call self.exec_and_display('SearchAbout ' . a:input . ".\n")
-endfunction"}}}
+endfunction "}}}
