@@ -13,7 +13,7 @@ let s:coq = {
       \ }
 
 function! s:coq.start() "{{{
-  let self.proc = vimproc#popen2(['coqtop', '-emacs-U'])
+  let self.proc = vimproc#popen2(['coqtop', '-emacs'])
 
   rightbelow vnew
     let self.bufnr = bufnr('%')
